@@ -18,5 +18,6 @@ public enum TokenType {
     LEFT_PARENTHESES,
     RIGHT_PARENTHESES,
 
+    Variable,
     UKNOWN
 }
