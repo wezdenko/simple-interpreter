@@ -3,6 +3,7 @@ package org.example.lexer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 public class Lexer {
@@ -30,6 +31,8 @@ public class Lexer {
             TokenType.SMALLER_EQUAL_THAN, "<=",
             TokenType.GREATER_EQUAL_THAN, ">="
     );
+
+    private static final Set<String> IDENTIFIERS = Set.of("a", "b", "c", "d", "e", "f", "g", "h");
 
     private final List<Token> tokens;
     private char[] buffer;
@@ -95,11 +98,10 @@ public class Lexer {
             var tokenType = determineOperator.apply(this.character);
             return new Token(tokenType, position, REVERSED_MULTI_OPERATOR_MAP.get(tokenType));
         }
-        return buildKeyWord();
-//        return new Token(TokenType.UNKNOWN, position, Character.toString(this.character));
+        return getKeywordOrIdentifier();
     }
 
-    private Token buildKeyWord() {
+    private Token getKeywordOrIdentifier() {
         var stringBuilder = new StringBuilder();
         var startPosition = this.position;
 
@@ -113,7 +115,9 @@ public class Lexer {
         if (KEYWORD_MAP.containsKey(stringValue)) {
             return new Token(KEYWORD_MAP.get(stringValue), startPosition, stringValue);
         }
-
+        if (IDENTIFIERS.contains(stringValue)) {
+            return new Token(TokenType.Identifier, startPosition, stringValue);
+        }
         return new Token(TokenType.UNKNOWN, startPosition, stringValue);
     }
 }
