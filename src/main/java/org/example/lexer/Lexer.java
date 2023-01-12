@@ -19,7 +19,7 @@ public class Lexer {
     private static final Map<Character, Function<Character, TokenType>> MULTI_OPERATOR_MAP = Map.of(
             '<', nextCharacter -> (nextCharacter == '=' ? TokenType.GREATER_EQUAL_THAN : TokenType.GREATER_THAN),
             '>', nextCharacter -> (nextCharacter == '=' ? TokenType.SMALLER_EQUAL_THAN : TokenType.SMALLER_THAN),
-            '!', nextCharacter -> (nextCharacter == '=' ? TokenType.NOT_EQUAL : TokenType.UKNOWN)
+            '!', nextCharacter -> (nextCharacter == '=' ? TokenType.NOT_EQUAL : TokenType.UNKNOWN)
     );
 
     private static final Map<TokenType, String> REVERSED_MULTI_OPERATOR_MAP = Map.of(
@@ -43,8 +43,7 @@ public class Lexer {
     }
 
     public List<Token> createTokens(char[] charsArray) {
-        this.buffer = charsArray;
-        this.character = this.buffer[0];
+        resetVariables(charsArray);
 
         while (this.position < this.buffer.length) {
             skipWhiteSpaces();
@@ -52,6 +51,12 @@ public class Lexer {
             nextCharacter();
         }
         return tokens;
+    }
+
+    private void resetVariables(char[] charsArray) {
+        this.buffer = charsArray;
+        this.position = 0;
+        this.character = this.buffer[position];
     }
 
     private void nextCharacter() {
@@ -65,7 +70,7 @@ public class Lexer {
     }
 
     private void skipWhiteSpaces() {
-        while (this.character == ' ') {
+        while (Character.isWhitespace(this.character)) {
             nextCharacter();
         }
     }
@@ -90,6 +95,25 @@ public class Lexer {
             var tokenType = determineOperator.apply(this.character);
             return new Token(tokenType, position, REVERSED_MULTI_OPERATOR_MAP.get(tokenType));
         }
-        return new Token(TokenType.UKNOWN, position, Character.toString(this.character));
+        return buildKeyWord();
+//        return new Token(TokenType.UNKNOWN, position, Character.toString(this.character));
+    }
+
+    private Token buildKeyWord() {
+        var stringBuilder = new StringBuilder();
+        var startPosition = this.position;
+
+        while(Character.isLetter(this.character)) {
+            stringBuilder.append(this.character);
+            nextCharacter();
+        }
+
+        var stringValue = stringBuilder.toString();
+
+        if (KEYWORD_MAP.containsKey(stringValue)) {
+            return new Token(KEYWORD_MAP.get(stringValue), startPosition, stringValue);
+        }
+
+        return new Token(TokenType.UNKNOWN, startPosition, stringValue);
     }
 }
