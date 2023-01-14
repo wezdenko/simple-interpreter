@@ -18,8 +18,8 @@ public class Lexer {
     );
 
     private static final Map<Character, Function<Character, TokenType>> MULTI_OPERATOR_MAP = Map.of(
-            '<', nextCharacter -> (nextCharacter == '=' ? TokenType.GREATER_EQUAL_THAN : TokenType.GREATER_THAN),
-            '>', nextCharacter -> (nextCharacter == '=' ? TokenType.SMALLER_EQUAL_THAN : TokenType.SMALLER_THAN),
+            '<', nextCharacter -> (nextCharacter == '=' ? TokenType.SMALLER_EQUAL_THAN : TokenType.SMALLER_THAN),
+            '>', nextCharacter -> (nextCharacter == '=' ? TokenType.GREATER_EQUAL_THAN : TokenType.GREATER_THAN),
             '!', nextCharacter -> (nextCharacter == '=' ? TokenType.NOT_EQUAL : TokenType.UNKNOWN)
     );
 
@@ -33,6 +33,12 @@ public class Lexer {
     );
 
     private static final Set<String> IDENTIFIERS = Set.of("a", "b", "c", "d", "e", "f", "g", "h");
+
+    private static final Set<TokenType> MULTI_OPERATORS_TOKEN_TYPES = Set.of(
+            TokenType.GREATER_EQUAL_THAN,
+            TokenType.SMALLER_EQUAL_THAN,
+            TokenType.NOT_EQUAL
+    );
 
     private final List<Token> tokens;
     private char[] buffer;
@@ -59,7 +65,9 @@ public class Lexer {
     private void resetVariables(char[] charsArray) {
         this.buffer = charsArray;
         this.position = 0;
-        this.character = this.buffer[position];
+        if (this.buffer.length > 0) {
+            this.character = this.buffer[position];
+        }
     }
 
     private void nextCharacter() {
@@ -70,6 +78,23 @@ public class Lexer {
             return;
         }
         this.character = this.buffer[position];
+    }
+
+    private void previousCharacter() {
+        this.position--;
+
+        if (this.position < 0) {
+            this.character = '\0';
+            return;
+        }
+        this.character = this.buffer[position];
+    }
+
+    private char getNextCharacter() {
+        if (this.position + 1 >= this.buffer.length) {
+            return '\0';
+        }
+        return this.buffer[position + 1];
     }
 
     private void skipWhiteSpaces() {
@@ -93,10 +118,13 @@ public class Lexer {
             );
         }
         if (MULTI_OPERATOR_MAP.containsKey(this.character)) {
+            var currentPosition = this.position;
             var determineOperator = MULTI_OPERATOR_MAP.get(this.character);
-            this.nextCharacter();
-            var tokenType = determineOperator.apply(this.character);
-            return new Token(tokenType, position, REVERSED_MULTI_OPERATOR_MAP.get(tokenType));
+            var tokenType = determineOperator.apply(getNextCharacter());
+            if (MULTI_OPERATORS_TOKEN_TYPES.contains(tokenType)) {
+                nextCharacter();
+            }
+            return new Token(tokenType, currentPosition, REVERSED_MULTI_OPERATOR_MAP.get(tokenType));
         }
         return getKeywordOrIdentifier();
     }
@@ -109,6 +137,7 @@ public class Lexer {
             stringBuilder.append(this.character);
             nextCharacter();
         }
+        previousCharacter();
 
         var stringValue = stringBuilder.toString();
 
