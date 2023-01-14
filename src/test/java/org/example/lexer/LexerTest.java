@@ -61,6 +61,15 @@ class LexerTest {
                         )
                 ),
                 Arguments.of(
+                        "a=123 or",
+                        List.of(
+                                new Token(TokenType.Identifier, 0, "a"),
+                                new Token(TokenType.EQUAL, 1, "="),
+                                new Token(TokenType.VALUE, 2, "123"),
+                                new Token(TokenType.OR, 6, "or")
+                        )
+                ),
+                Arguments.of(
                         "",
                         List.of()
                 ),
@@ -74,7 +83,7 @@ class LexerTest {
     @ParameterizedTest
     @MethodSource("provideArguments")
     void createTokens(String text, List<Token> expectedTokens) {
-        var lexer = new Lexer();
+        var lexer = new Lexer("".toCharArray());
         var tokens = lexer.createTokens(text.toCharArray());
         Assertions.assertEquals(tokens, expectedTokens);
     }

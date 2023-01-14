@@ -19,5 +19,6 @@ public enum TokenType {
     RIGHT_PARENTHESES,
 
     Identifier,
+    VALUE,
     UNKNOWN
 }

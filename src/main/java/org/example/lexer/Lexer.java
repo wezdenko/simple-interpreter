@@ -45,10 +45,23 @@ public class Lexer {
     private int position;
     private char character;
 
-    public Lexer() {
+    public Lexer(char[] charsArray) {
+        this.buffer = charsArray;
         this.tokens = new ArrayList<>();
         this.position = 0;
-        this.character = '\0';
+
+        if (this.buffer.length > 0) {
+            this.character = this.buffer[position];
+        } else {
+            this.character = '\0';
+        }
+    }
+
+    public Token getNextToken() {
+        skipWhiteSpaces();
+        var token = getToken();
+        nextCharacter();
+        return token;
     }
 
     public List<Token> createTokens(char[] charsArray) {
@@ -126,7 +139,24 @@ public class Lexer {
             }
             return new Token(tokenType, currentPosition, REVERSED_MULTI_OPERATOR_MAP.get(tokenType));
         }
+        if (Character.isDigit(this.character)) {
+            return getValue();
+        }
         return getKeywordOrIdentifier();
+    }
+
+    private Token getValue() {
+        var stringBuilder = new StringBuilder();
+        var startPosition = this.position;
+
+        while(Character.isDigit(this.character)) {
+            stringBuilder.append(this.character);
+            nextCharacter();
+        }
+        previousCharacter();
+
+        var stringValue = stringBuilder.toString();
+        return new Token(TokenType.VALUE, startPosition, stringValue);
     }
 
     private Token getKeywordOrIdentifier() {
