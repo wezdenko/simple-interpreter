@@ -34,7 +34,11 @@ public class Parser {
     }
 
     public IExpression parse() {
-        return parseOrExpression();
+        var expression = parseOrExpression();
+        if (expression == null || !isCurrentTokenOfType(TokenType.EOF)) {
+            throw new RuntimeException();
+        }
+        return expression;
     }
 
 
@@ -55,12 +59,12 @@ public class Parser {
     }
 
     private IExpression parseAndExpression() {
-        var leftExpression = parseComparisonExpression();
+        var leftExpression = parseParenthesesOrComparisonExpression();
 
         if (leftExpression == null) return null;
 
         while (checkAndConsume(TokenType.AND)) {
-            var rightExpression = parseComparisonExpression();
+            var rightExpression = parseParenthesesOrComparisonExpression();
             if (rightExpression == null) {
                 throw new RuntimeException();
             }
@@ -70,21 +74,32 @@ public class Parser {
         return leftExpression;
     }
 
+    private IExpression parseParenthesesOrComparisonExpression() {
+        var expression = parseParenthesesExpression();
+        if (expression == null) {
+            expression = parseComparisonExpression();
+        }
+        return expression;
+    }
+
+    private IExpression parseParenthesesExpression() {
+        if (!checkAndConsume(TokenType.LEFT_PARENTHESES)) return null;
+
+        var expression = parseOrExpression();
+
+        if (!checkAndConsume(TokenType.RIGHT_PARENTHESES) || expression == null) {
+            throw new RuntimeException();
+        }
+        return expression;
+    }
+
     private IExpression parseComparisonExpression() {
         Identifier identifier = parseIdentifier();
-
-        if (identifier == null) return null;
 
         if (COMPARISON_EXPRESSION_MAP.containsKey(this.currentToken.tokenType)) {
             var expression = COMPARISON_EXPRESSION_MAP.get(this.currentToken.tokenType);
             nextToken();
-
-            Value value = parseValue();
-            if (value == null) {
-                throw new RuntimeException();
-            }
-
-            return expression.apply(identifier, value);
+            return expression.apply(identifier, parseValue());
         }
         return null;
     }
@@ -95,7 +110,7 @@ public class Parser {
             nextToken();
             return token;
         }
-        return null;
+        throw new RuntimeException();
     }
 
     private Identifier parseIdentifier() {
@@ -104,7 +119,7 @@ public class Parser {
             nextToken();
             return token;
         }
-        return null;
+        throw new RuntimeException();
     }
 
     private boolean checkAndConsume(TokenType tokenType) {

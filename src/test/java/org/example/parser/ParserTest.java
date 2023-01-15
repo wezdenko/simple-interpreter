@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.stream.Stream;
 
@@ -25,6 +26,18 @@ class ParserTest {
     @BeforeEach
     void beforeEach() {
         objectMapper = new ObjectMapper();
+    }
+
+    void checkParser(String text, IExpression expectedExpressions) throws JsonProcessingException {
+        var lexer = new Lexer(text.toCharArray());
+        var parser = new Parser(lexer);
+
+        var expressions = parser.parse();
+
+        assertEquals(
+                objectMapper.writeValueAsString(expectedExpressions),
+                objectMapper.writeValueAsString(expressions)
+        );
     }
 
     static Stream<Arguments> provideForParseComparison() {
@@ -59,15 +72,7 @@ class ParserTest {
     @ParameterizedTest
     @MethodSource("provideForParseComparison")
     void parseComparisonTest(String text, IExpression expectedExpressions) throws JsonProcessingException {
-        var lexer = new Lexer(text.toCharArray());
-        var parser = new Parser(lexer);
-
-        var expressions = parser.parse();
-
-        assertEquals(
-                objectMapper.writeValueAsString(expectedExpressions),
-                objectMapper.writeValueAsString(expressions)
-        );
+        checkParser(text, expectedExpressions);
     }
 
     static Stream<Arguments> provideArguments() {
@@ -112,15 +117,60 @@ class ParserTest {
     @ParameterizedTest
     @MethodSource("provideArguments")
     void parseTest(String text, IExpression expectedExpressions) throws JsonProcessingException {
-        var lexer = new Lexer(text.toCharArray());
-        var parser = new Parser(lexer);
+        checkParser(text, expectedExpressions);
+    }
 
-        var expressions = parser.parse();
-
-        assertEquals(
-                objectMapper.writeValueAsString(expectedExpressions),
-                objectMapper.writeValueAsString(expressions)
+    static Stream<Arguments> provideForParseParenthesis() {
+        return Stream.of(
+                Arguments.of(
+                        "(a=0 or b=1) and c=2",
+                        new AndExpression(
+                                new OrExpression(
+                                        new EqualExpression(new Identifier("a"), new Value(0)),
+                                        new EqualExpression(new Identifier("b"), new Value(1))
+                                ),
+                                new EqualExpression(new Identifier("c"), new Value(2))
+                        )
+                ),
+                Arguments.of(
+                        "a=0 and (b=1 or c=2)",
+                        new AndExpression(
+                                new EqualExpression(new Identifier("a"), new Value(0)),
+                                new OrExpression(
+                                        new EqualExpression(new Identifier("b"), new Value(1)),
+                                        new EqualExpression(new Identifier("c"), new Value(2))
+                                )
+                        )
+                ),
+                Arguments.of(
+                        "(a=0 or b=1 and c=2)",
+                        new OrExpression(
+                                new EqualExpression(new Identifier("a"), new Value(0)),
+                                new AndExpression(
+                                        new EqualExpression(new Identifier("b"), new Value(1)),
+                                        new EqualExpression(new Identifier("c"), new Value(2))
+                                )
+                        )
+                )
         );
     }
 
+    @ParameterizedTest
+    @MethodSource("provideForParseParenthesis")
+    void parseParenthesisTest(String text, IExpression expectedExpressions) throws JsonProcessingException {
+        checkParser(text, expectedExpressions);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "(a=0 and b=1 or c=2",
+            "a=0 and b=1) or c=2",
+            "() a=0 and b=1 or c=2"
+    })
+    void parseInvalidParenthesisTest(String text) {
+        var lexer = new Lexer(text.toCharArray());
+        var parser = new Parser(lexer);
+
+        assertThrows(RuntimeException.class, parser::parse);
+    }
 }
