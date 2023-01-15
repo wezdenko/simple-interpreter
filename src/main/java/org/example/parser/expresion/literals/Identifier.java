@@ -1,8 +1,9 @@
 package org.example.parser.expresion.literals;
 
-import org.example.parser.expresion.IExpression;
+import org.example.interpreter.interfaces.ILiteralVisitable;
+import org.example.interpreter.interfaces.IVisitor;
 
-public class Identifier implements IExpression {
+public class Identifier implements ILiteralVisitable {
 
     private final String value;
 
@@ -12,5 +13,10 @@ public class Identifier implements IExpression {
 
     public String getValue() {
         return value;
+    }
+
+    @Override
+    public int accept(IVisitor visitor) {
+        return visitor.visit(this);
     }
 }

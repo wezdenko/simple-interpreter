@@ -33,14 +33,13 @@ public class Parser {
         currentToken = lexer.getNextToken();
     }
 
-    public IExpression parse() {
+    public TopExpression parse() {
         var expression = parseOrExpression();
         if (expression == null || !isCurrentTokenOfType(TokenType.EOF)) {
             throw new RuntimeException();
         }
-        return expression;
+        return new TopExpression(expression);
     }
-
 
     private IExpression parseOrExpression() {
         var leftExpression = parseAndExpression();

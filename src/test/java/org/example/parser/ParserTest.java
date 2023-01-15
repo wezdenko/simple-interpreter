@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.lexer.Lexer;
 import org.example.parser.expresion.IExpression;
+import org.example.parser.expresion.TopExpression;
 import org.example.parser.expresion.booleans.AndExpression;
 import org.example.parser.expresion.booleans.OrExpression;
 import org.example.parser.expresion.comparators.*;
@@ -44,27 +45,39 @@ class ParserTest {
         return Stream.of(
                 Arguments.of(
                         "a=1",
-                        new EqualExpression(new Identifier("a"), new Value(1))
+                        new TopExpression(
+                                new EqualExpression(new Identifier("a"), new Value(1))
+                        )
                 ),
                 Arguments.of(
                         "a!=1",
-                        new NotEqualExpression(new Identifier("a"), new Value(1))
+                        new TopExpression(
+                               new NotEqualExpression(new Identifier("a"), new Value(1))
+                        )
                 ),
                 Arguments.of(
                         "a<1",
-                        new SmallerThanExpression(new Identifier("a"), new Value(1))
+                        new TopExpression(
+                                new SmallerThanExpression(new Identifier("a"), new Value(1))
+                        )
                 ),
                 Arguments.of(
                         "a<=1",
-                        new SmallerEqualThanExpression(new Identifier("a"), new Value(1))
+                        new TopExpression(
+                                new SmallerEqualThanExpression(new Identifier("a"), new Value(1))
+                        )
                 ),
                 Arguments.of(
                         "a>1",
-                        new GreaterThanExpression(new Identifier("a"), new Value(1))
+                        new TopExpression(
+                                new GreaterThanExpression(new Identifier("a"), new Value(1))
+                        )
                 ),
                 Arguments.of(
                         "a>=1",
-                        new GreaterEqualThanExpression(new Identifier("a"), new Value(1))
+                        new TopExpression(
+                                new GreaterEqualThanExpression(new Identifier("a"), new Value(1))
+                        )
                 )
         );
     }
@@ -79,36 +92,44 @@ class ParserTest {
         return Stream.of(
                 Arguments.of(
                         "a=1 or b=0",
-                        new OrExpression(
-                                new EqualExpression(new Identifier("a"), new Value(1)),
-                                new EqualExpression(new Identifier("b"), new Value(0))
+                        new TopExpression(
+                                new OrExpression(
+                                        new EqualExpression(new Identifier("a"), new Value(1)),
+                                        new EqualExpression(new Identifier("b"), new Value(0))
+                                )
                         )
                 ),
                 Arguments.of(
                         "a=1 and b=0",
-                        new AndExpression(
-                                new EqualExpression(new Identifier("a"), new Value(1)),
-                                new EqualExpression(new Identifier("b"), new Value(0))
+                        new TopExpression(
+                                new AndExpression(
+                                        new EqualExpression(new Identifier("a"), new Value(1)),
+                                        new EqualExpression(new Identifier("b"), new Value(0))
+                                )
                         )
                 ),
                 Arguments.of(
                         "a=1 or b=0 and b=1",
-                        new OrExpression(
-                                new EqualExpression(new Identifier("a"), new Value(1)),
-                                new AndExpression(
-                                        new EqualExpression(new Identifier("b"), new Value(0)),
-                                        new EqualExpression(new Identifier("b"), new Value(1))
+                        new TopExpression(
+                                new OrExpression(
+                                        new EqualExpression(new Identifier("a"), new Value(1)),
+                                        new AndExpression(
+                                                new EqualExpression(new Identifier("b"), new Value(0)),
+                                                new EqualExpression(new Identifier("b"), new Value(1))
+                                        )
                                 )
                         )
                 ),
                 Arguments.of(
                         "a=1 and b=0 or b=1",
-                        new OrExpression(
-                                new AndExpression(
-                                        new EqualExpression(new Identifier("a"), new Value(1)),
-                                        new EqualExpression(new Identifier("b"), new Value(0))
-                                ),
-                                new EqualExpression(new Identifier("b"), new Value(1))
+                        new TopExpression(
+                                new OrExpression(
+                                        new AndExpression(
+                                                new EqualExpression(new Identifier("a"), new Value(1)),
+                                                new EqualExpression(new Identifier("b"), new Value(0))
+                                        ),
+                                        new EqualExpression(new Identifier("b"), new Value(1))
+                                )
                         )
                 )
         );
@@ -124,31 +145,37 @@ class ParserTest {
         return Stream.of(
                 Arguments.of(
                         "(a=0 or b=1) and c=2",
-                        new AndExpression(
-                                new OrExpression(
-                                        new EqualExpression(new Identifier("a"), new Value(0)),
-                                        new EqualExpression(new Identifier("b"), new Value(1))
-                                ),
-                                new EqualExpression(new Identifier("c"), new Value(2))
-                        )
-                ),
-                Arguments.of(
-                        "a=0 and (b=1 or c=2)",
-                        new AndExpression(
-                                new EqualExpression(new Identifier("a"), new Value(0)),
-                                new OrExpression(
-                                        new EqualExpression(new Identifier("b"), new Value(1)),
+                        new TopExpression(
+                                new AndExpression(
+                                        new OrExpression(
+                                                new EqualExpression(new Identifier("a"), new Value(0)),
+                                                new EqualExpression(new Identifier("b"), new Value(1))
+                                        ),
                                         new EqualExpression(new Identifier("c"), new Value(2))
                                 )
                         )
                 ),
                 Arguments.of(
-                        "(a=0 or b=1 and c=2)",
-                        new OrExpression(
-                                new EqualExpression(new Identifier("a"), new Value(0)),
+                        "a=0 and (b=1 or c=2)",
+                        new TopExpression(
                                 new AndExpression(
-                                        new EqualExpression(new Identifier("b"), new Value(1)),
-                                        new EqualExpression(new Identifier("c"), new Value(2))
+                                        new EqualExpression(new Identifier("a"), new Value(0)),
+                                        new OrExpression(
+                                                new EqualExpression(new Identifier("b"), new Value(1)),
+                                                new EqualExpression(new Identifier("c"), new Value(2))
+                                        )
+                                )
+                        )
+                ),
+                Arguments.of(
+                        "(a=0 or b=1 and c=2)",
+                        new TopExpression(
+                                new OrExpression(
+                                        new EqualExpression(new Identifier("a"), new Value(0)),
+                                        new AndExpression(
+                                                new EqualExpression(new Identifier("b"), new Value(1)),
+                                                new EqualExpression(new Identifier("c"), new Value(2))
+                                        )
                                 )
                         )
                 )

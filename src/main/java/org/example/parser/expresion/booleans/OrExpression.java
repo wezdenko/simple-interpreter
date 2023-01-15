@@ -1,5 +1,6 @@
 package org.example.parser.expresion.booleans;
 
+import org.example.interpreter.interfaces.IVisitor;
 import org.example.parser.expresion.IExpression;
 
 public class OrExpression implements IExpression {
@@ -18,5 +19,10 @@ public class OrExpression implements IExpression {
 
     public IExpression getRight() {
         return right;
+    }
+
+    @Override
+    public boolean accept(IVisitor visitor) {
+        return visitor.visit(this);
     }
 }
