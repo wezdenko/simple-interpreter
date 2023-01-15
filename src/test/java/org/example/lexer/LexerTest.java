@@ -19,7 +19,8 @@ class LexerTest {
                                 new Token(TokenType.RIGHT_PARENTHESES, 2, ")"),
                                 new Token(TokenType.SMALLER_THAN, 4, "<"),
                                 new Token(TokenType.GREATER_THAN, 6, ">"),
-                                new Token(TokenType.EQUAL, 8, "=")
+                                new Token(TokenType.EQUAL, 8, "="),
+                                new Token(TokenType.EOF, 9, "\0")
                         )
                 ),
                 Arguments.of(
@@ -27,7 +28,8 @@ class LexerTest {
                         List.of(
                                 new Token(TokenType.SMALLER_EQUAL_THAN, 0, "<="),
                                 new Token(TokenType.GREATER_EQUAL_THAN, 3, ">="),
-                                new Token(TokenType.NOT_EQUAL, 6, "!=")
+                                new Token(TokenType.NOT_EQUAL, 6, "!="),
+                                new Token(TokenType.EOF, 8, "\0")
                         )
                 ),
                 Arguments.of(
@@ -40,7 +42,8 @@ class LexerTest {
                                 new Token(TokenType.Identifier, 8, "e"),
                                 new Token(TokenType.Identifier, 10, "f"),
                                 new Token(TokenType.Identifier, 12, "g"),
-                                new Token(TokenType.Identifier, 14, "h")
+                                new Token(TokenType.Identifier, 14, "h"),
+                                new Token(TokenType.EOF, 15, "\0")
                         )
                 ),
                 Arguments.of(
@@ -50,14 +53,16 @@ class LexerTest {
                                 new Token(TokenType.UNKNOWN, 2, "ab"),
                                 new Token(TokenType.Identifier, 5, "a"),
                                 new Token(TokenType.EQUAL, 6, "="),
-                                new Token(TokenType.Identifier, 7, "b")
+                                new Token(TokenType.Identifier, 7, "b"),
+                                new Token(TokenType.EOF, 8, "\0")
                         )
                 ),
                 Arguments.of(
                         "  <   >  ",
                         List.of(
                                 new Token(TokenType.SMALLER_THAN, 2, "<"),
-                                new Token(TokenType.GREATER_THAN, 6, ">")
+                                new Token(TokenType.GREATER_THAN, 6, ">"),
+                                new Token(TokenType.EOF, 9, "\0")
                         )
                 ),
                 Arguments.of(
@@ -66,7 +71,8 @@ class LexerTest {
                                 new Token(TokenType.Identifier, 0, "a"),
                                 new Token(TokenType.EQUAL, 1, "="),
                                 new Token(TokenType.VALUE, 2, "123"),
-                                new Token(TokenType.OR, 6, "or")
+                                new Token(TokenType.OR, 6, "or"),
+                                new Token(TokenType.EOF, 8, "\0")
                         )
                 ),
                 Arguments.of(
@@ -75,16 +81,22 @@ class LexerTest {
                 ),
                 Arguments.of(
                         "\t   ",
-                        List.of()
+                        List.of(
+                                new Token(TokenType.EOF, 4, "\0")
+                        )
                 )
         );
     }
 
     @ParameterizedTest
     @MethodSource("provideArguments")
-    void createTokens(String text, List<Token> expectedTokens) {
-        var lexer = new Lexer("".toCharArray());
-        var tokens = lexer.createTokens(text.toCharArray());
-        Assertions.assertEquals(tokens, expectedTokens);
+    void getNextToken(String text, List<Token> expectedTokens) {
+        var lexer = new Lexer(text.toCharArray());
+        expectedTokens.forEach(expectedToken -> {
+            var token = lexer.getNextToken();
+            Assertions.assertEquals(token.tokenType, expectedToken.tokenType);
+            Assertions.assertEquals(token.position, expectedToken.position);
+            Assertions.assertEquals(token.value, expectedToken.value);
+        });
     }
 }

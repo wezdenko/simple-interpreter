@@ -1,7 +1,5 @@
 package org.example.lexer;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -40,14 +38,12 @@ public class Lexer {
             TokenType.NOT_EQUAL
     );
 
-    private final List<Token> tokens;
-    private char[] buffer;
+    private final char[] buffer;
     private int position;
     private char character;
 
     public Lexer(char[] charsArray) {
         this.buffer = charsArray;
-        this.tokens = new ArrayList<>();
         this.position = 0;
 
         if (this.buffer.length > 0) {
@@ -62,25 +58,6 @@ public class Lexer {
         var token = getToken();
         nextCharacter();
         return token;
-    }
-
-    public List<Token> createTokens(char[] charsArray) {
-        resetVariables(charsArray);
-
-        while (this.position < this.buffer.length) {
-            skipWhiteSpaces();
-            addToken();
-            nextCharacter();
-        }
-        return tokens;
-    }
-
-    private void resetVariables(char[] charsArray) {
-        this.buffer = charsArray;
-        this.position = 0;
-        if (this.buffer.length > 0) {
-            this.character = this.buffer[position];
-        }
     }
 
     private void nextCharacter() {
@@ -116,12 +93,6 @@ public class Lexer {
         }
     }
 
-    private void addToken() {
-        if (this.character != '\0') {
-            this.tokens.add(getToken());
-        }
-    }
-
     private Token getToken() {
         if (SINGLE_OPERATOR_MAP.containsKey(this.character)) {
             return new Token(
@@ -138,6 +109,9 @@ public class Lexer {
                 nextCharacter();
             }
             return new Token(tokenType, currentPosition, REVERSED_MULTI_OPERATOR_MAP.get(tokenType));
+        }
+        if (this.character == '\0') {
+            return new Token(TokenType.EOF, this.position, "\0");
         }
         if (Character.isDigit(this.character)) {
             return getValue();
