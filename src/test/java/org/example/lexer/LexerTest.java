@@ -90,7 +90,7 @@ class LexerTest {
 
     @ParameterizedTest
     @MethodSource("provideArguments")
-    void getNextToken(String text, List<Token> expectedTokens) {
+    void getNextTokenTest(String text, List<Token> expectedTokens) {
         var lexer = new Lexer(text.toCharArray());
         expectedTokens.forEach(expectedToken -> {
             var token = lexer.getNextToken();
