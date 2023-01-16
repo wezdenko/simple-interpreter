@@ -1,10 +1,12 @@
 package org.example.parser.expresion.literals;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import org.example.interpreter.interfaces.ILiteralVisitable;
 import org.example.interpreter.interfaces.IVisitor;
 
 public class Value implements ILiteralVisitable {
 
+    @JsonValue
     private final int value;
 
     public Value(int value) {
