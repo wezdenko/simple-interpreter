@@ -3,6 +3,7 @@ package org.example.parser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.lexer.Lexer;
+import org.example.parser.exception.ParserException;
 import org.example.parser.expresion.IExpression;
 import org.example.parser.expresion.TopExpression;
 import org.example.parser.expresion.booleans.AndExpression;
@@ -198,6 +199,6 @@ class ParserTest {
         var lexer = new Lexer(text.toCharArray());
         var parser = new Parser(lexer);
 
-        assertThrows(RuntimeException.class, parser::parse);
+        assertThrows(ParserException.class, parser::parse);
     }
 }

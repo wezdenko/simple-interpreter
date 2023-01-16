@@ -1,21 +1,32 @@
 package org.example;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import org.example.interpreter.Interpreter;
 import org.example.lexer.Lexer;
 import org.example.parser.Parser;
 
+import java.util.Map;
+
 public class Main {
-    public static void main(String[] args) throws JsonProcessingException {
-        var lexer = new Lexer("a=1".toCharArray());
+    public static void main(String[] args) {
+        final Map<Character, Integer> records = Map.of(
+                'a', 1,
+                'b', 1,
+                'c', 1,
+                'd', 1,
+                'e', 0,
+                'f', 0,
+                'g', 0,
+                'h', 0
+        );
+
+        var text = "a=1 or b>1";
+
+        var lexer = new Lexer(text.toCharArray());
         var parser = new Parser(lexer);
+        var interpreter = new Interpreter(records);
 
-        var expression = parser.parse();
+        var result = interpreter.run(parser.parse());
 
-        var mapper = new ObjectMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-
-        System.out.println(mapper.writeValueAsString(expression));
+        System.out.println(result);
     }
 }

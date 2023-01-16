@@ -3,6 +3,7 @@ package org.example.parser;
 import org.example.lexer.Lexer;
 import org.example.lexer.Token;
 import org.example.lexer.TokenType;
+import org.example.parser.exception.ParserException;
 import org.example.parser.expresion.*;
 import org.example.parser.expresion.booleans.AndExpression;
 import org.example.parser.expresion.booleans.OrExpression;
@@ -36,7 +37,7 @@ public class Parser {
     public TopExpression parse() {
         var expression = parseOrExpression();
         if (expression == null || !isCurrentTokenOfType(TokenType.EOF)) {
-            throw new RuntimeException();
+            throw createExceptionForCurrentToken();
         }
         return new TopExpression(expression);
     }
@@ -49,7 +50,7 @@ public class Parser {
         while (checkAndConsume(TokenType.OR)) {
             var rightExpression = parseAndExpression();
             if (rightExpression == null) {
-                throw new RuntimeException();
+                throw createExceptionForCurrentToken();
             }
 
             leftExpression = new OrExpression(leftExpression, rightExpression);
@@ -65,7 +66,7 @@ public class Parser {
         while (checkAndConsume(TokenType.AND)) {
             var rightExpression = parseParenthesesOrComparisonExpression();
             if (rightExpression == null) {
-                throw new RuntimeException();
+                throw createExceptionForCurrentToken();
             }
 
             leftExpression = new AndExpression(leftExpression, rightExpression);
@@ -87,7 +88,7 @@ public class Parser {
         var expression = parseOrExpression();
 
         if (!checkAndConsume(TokenType.RIGHT_PARENTHESES) || expression == null) {
-            throw new RuntimeException();
+            throw createExceptionForCurrentToken();
         }
         return expression;
     }
@@ -109,7 +110,7 @@ public class Parser {
             nextToken();
             return token;
         }
-        throw new RuntimeException();
+        throw createExceptionForCurrentToken();
     }
 
     private Identifier parseIdentifier() {
@@ -118,7 +119,7 @@ public class Parser {
             nextToken();
             return token;
         }
-        throw new RuntimeException();
+        throw createExceptionForCurrentToken();
     }
 
     private boolean checkAndConsume(TokenType tokenType) {
@@ -135,5 +136,9 @@ public class Parser {
 
     private boolean isCurrentTokenOfType(TokenType tokenType) {
         return this.currentToken.tokenType.equals(tokenType);
+    }
+
+    private ParserException createExceptionForCurrentToken() {
+        return new ParserException(this.currentToken.value, this.currentToken.position);
     }
 }
