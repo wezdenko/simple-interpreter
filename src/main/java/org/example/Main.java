@@ -47,6 +47,13 @@ public class Main {
             return;
         }
 
+        printTree(input, expression);
+
+        System.out.println("Result of the expression: ");
+        System.out.println(interpreter.run(expression));
+    }
+
+    private static void printTree(Scanner input, IExpression expression) {
         System.out.println("Print tree in console? (Y/N)");
         while (true) {
             var answer = input.nextLine();
@@ -58,9 +65,6 @@ public class Main {
             }
             System.out.println("Wrong value. Use (Y/N)");
         }
-
-        System.out.println("Result of the expression: ");
-        System.out.println(interpreter.run(expression));
     }
 
     private static boolean isYesNo(String string) {
