@@ -17,10 +17,10 @@ import java.util.Set;
 public class Main {
     public static void main(String[] args) {
         Map<Character, Integer> records = Map.of(
-                'a', 1,
+                'a', 0,
                 'b', 1,
-                'c', 1,
-                'd', 1,
+                'c', 2,
+                'd', 3,
                 'e', 0,
                 'f', 0,
                 'g', 0,
